@@ -52,7 +52,6 @@ calc.alpha = function(M, method=c('standard', 'boot')[1]){
     ldply(minitems:ncol(M), function(numitems){
       cron = cronbach(M[,1:numitems])
       cron$alpha = max(0, cron$alpha, na.rm = TRUE)
-      print(cron$alpha)
       if (cron$alpha > 0){
         CI = cronbach.alpha.CI(cron$alpha, cron$sample.size, cron$number.of.items)
       }
