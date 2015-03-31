@@ -15,7 +15,13 @@ trial.mat = function(df, dv=NULL){
   }
   df = ddply(df, .(Subject), transform, trialnum=1:length(Subject))
   mat = cast(df, Subject ~ trialnum, value=dv)
-  as.matrix(subset(mat, select=-Subject))       # remove column with subject numbers
+  M = as.matrix(subset(mat, select=-Subject))       # remove column with subject numbers
+  
+  # Remove columns with more than half NAs (TODO: throw warning)
+  countNA = apply(M, 2, function(col) sum(is.na(col)))
+  to_rm = which(countNA > nrow(M) / 2)
+  M = if (length(to_rm)) M[,-to_rm] else M
+  return(M)
 }
 
 #' Convert cocron output (from cocron package) to data.frame

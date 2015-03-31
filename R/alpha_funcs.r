@@ -7,7 +7,8 @@
 #' @param to_df parse cocron output into dataframe
 #' @return cocron output or the same output parsed into dataframe
 calc.alphadiff = function(M1, M2, to_df=TRUE){
-  if(cronbach(M2)$alpha < 0 | cronbach(M1)$alpha < 0)
+  alphas = c(cronbach(M1)$alpha, cronbach(M2)$alpha)
+  if (any(alphas < 0 | is.na(alphas)))
     return("Produces alpha less than 0")
   else out = cocron(list(whole=M1, half=M2), dep=TRUE)
   
@@ -50,8 +51,12 @@ calc.alpha = function(M, method=c('standard', 'boot')[1]){
   if (method == 'standard'){
     ldply(minitems:ncol(M), function(numitems){
       cron = cronbach(M[,1:numitems])
-      cron$alpha = max(0, cron$alpha)
-      CI = cronbach.alpha.CI(cron$alpha, cron$sample.size, cron$number.of.items)
+      cron$alpha = max(0, cron$alpha, na.rm = TRUE)
+      print(cron$alpha)
+      if (cron$alpha > 0){
+        CI = cronbach.alpha.CI(cron$alpha, cron$sample.size, cron$number.of.items)
+      }
+      else CI = c(lower.bound=0, upper.bound=0)
       return(data.frame(numitems = numitems, alpha = cron$alpha,
                         conf.025 = CI['lower.bound'],
                         conf.95 = CI['upper.bound']
